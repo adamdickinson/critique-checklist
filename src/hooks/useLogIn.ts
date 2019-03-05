@@ -1,6 +1,9 @@
 import useInputValue from "@rehooks/input-value"
 
-import React, { useState } from "react"
+import React from "react"
+
+import { AuthLogInFunction, AuthResponse } from "../components/AuthProvider"
+import logIn from "../containers/LogIn"
 
 type OnEnterCallback = (event: React.KeyboardEvent<HTMLInputElement>) => void
 type OnClickCallback = (event: React.MouseEvent<HTMLButtonElement>) => void
@@ -15,46 +18,67 @@ interface ButtonWithClick {
   onClick: OnClickCallback
 }
 
+interface LogInFormProps {
+  passwordProps: InputValueWithEnter<string>
+  submitProps:  ButtonWithClick
+  usernameProps: InputValueWithEnter<string>
+}
+
 interface LogInHook {
+  getFormProps: (logIn: AuthLogInFunction) => LogInFormProps
   status?: string
-  username: InputValueWithEnter<string>
-  password: InputValueWithEnter<string>
-  logIn: ButtonWithClick
 }
 
 function useLogIn() : LogInHook {
   const [status, setStatus] = React.useState("")
+  const usernameInput = useInputValue("")
+  const passwordInput = useInputValue("")
 
-  let password: InputValueWithEnter<string>, username: InputValueWithEnter<string>
-
-  function logIn(): void { 
-    console.log(username, password)
-    setStatus("Logging in...")
-    setTimeout(() => setStatus("Login failed"), 1000)
-  }
-
-  function onClick(callback: () => void): OnClickCallback {
-    return function(event: React.MouseEvent<HTMLButtonElement>): void {
-      callback()
+  function onClick(logIn: () => Promise<AuthResponse>): OnClickCallback {
+    return async function(event: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+      setStatus("Logging in...")
+      const { message, success } = await logIn()
+      if( !success ) setStatus(message)
     }
   }
 
-  function onEnter(callback: () => void): OnEnterCallback {
-    return function(event: React.KeyboardEvent<HTMLInputElement>): void {
+  function onEnter(logIn: () => Promise<AuthResponse>): OnEnterCallback {
+    return async function(event: React.KeyboardEvent<HTMLInputElement>): Promise<void> {
       if( event.key !== "Enter" ) return
-      callback()
+      setStatus("Logging in...")
+      const { message, success } = await logIn()
+      if( !success ) setStatus(message)
     }
   }
 
-  username = { ...useInputValue(""), onKeyPress: onEnter(logIn) }
-  password = { ...useInputValue(""), onKeyPress: onEnter(logIn) }
+  const getFormProps = (logIn: (username: string, password: string) => Promise<AuthResponse>) => {
+
+    const usernameProps: InputValueWithEnter<string> = {
+      ...usernameInput,
+      onKeyPress: onEnter(() => logIn(usernameInput.value, passwordInput.value))
+    }
+
+    const passwordProps: InputValueWithEnter<string> = {
+      ...passwordInput,
+      onKeyPress: onEnter(() => logIn(usernameInput.value, passwordInput.value))
+    }
+
+    const formProps = {
+      usernameProps,
+      passwordProps,
+      submitProps: {
+        onClick: onClick(() => logIn(usernameProps.value, passwordProps.value))
+      }
+    }
+
+    return formProps
+  }
 
   const specs: LogInHook = {
-    logIn: { onClick: onClick(logIn) },
-    password,
+    getFormProps,
     status,
-    username,
   }
+
   return specs
 }
 

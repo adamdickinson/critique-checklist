@@ -30,6 +30,13 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.(graphql|gql)$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "graphql-tag/loader"
+        }
+      },
+      {
         test: /\.tsx?$/,
         use: {
           loader: "ts-loader"
@@ -49,7 +56,7 @@ module.exports = {
         }
       },
       {
-        test: /\.(png|jpg|gif|svg)$/,
+        test: /\.(png|jpg|gif|svg|woff|woff2)$/,
         use: [
           {
             loader: 'file-loader',

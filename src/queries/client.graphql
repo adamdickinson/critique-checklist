@@ -1,0 +1,20 @@
+mutation AddClient($client:ClientInput!) {
+  addClient(client:$client) {
+    id
+    name
+  }
+}
+
+mutation DeleteClient($id:ID!) {
+  deleteClient(id:$id) {
+    id
+    name
+  }
+}
+
+query GetClients {
+  clients {
+    id
+    name
+  }
+}

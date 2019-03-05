@@ -1,8 +1,10 @@
 import { Button, Typography } from "@material-ui/core"
+import { Redirect } from "react-router-dom"
 
 import * as React from "react"
 import styled from "styled-components"
 
+import { AuthConsumer, AuthConsumerValue } from "../components/AuthProvider"
 import LoginBackground from "../images/LoginBackground.jpg"
 import Panel from "../components/Panel"
 import TextField from "../components/TextField"
@@ -11,9 +13,7 @@ import useLogIn from "../hooks/useLogIn"
 
 export default () => {
   const {
-    logIn,
-    password,
-    username,
+    getFormProps,
     status
   } = useLogIn()
 
@@ -27,16 +27,27 @@ export default () => {
       >
         <Mid>
           <section>
-            <Typography variant="title" style={{ fontSize: 64 }} color="inherit">
+            <Typography variant="h1" style={{ fontSize: 64 }} color="inherit">
               Critique
             </Typography>
             <Typography variant="caption" color="inherit" style={{ marginBottom: 12 }}>
               {status}
             </Typography>
-            <TextField variant="filled" label="Username" {...username} />
-            <TextField variant="filled" label="Password" type="password" {...password} />
-            <Button variant="contained" size="large" color="primary" {...logIn}>Log In</Button>
-            <Button variant="contained" size="large" color="secondary">Sign Up</Button>
+            <AuthConsumer>
+              {({ logIn, user }: AuthConsumerValue) => {
+                if( user ) return <Redirect to="/" />
+
+                const { submitProps, usernameProps, passwordProps } = getFormProps(logIn)
+                return (
+                  <>
+                    <TextField variant="filled" label="Username" {...usernameProps} />
+                    <TextField variant="filled" label="Password" type="password" {...passwordProps} />
+                    <Button variant="contained" size="large" color="primary" {...submitProps}>Log In</Button>
+                    <Button variant="contained" size="large" color="secondary">Sign Up</Button>
+                  </>
+                )
+              }}
+            </AuthConsumer>
           </section>
         </Mid>
 

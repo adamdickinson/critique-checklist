@@ -17,7 +17,7 @@ export default createMuiTheme({
     fontWeightLight: 300,
     fontWeightRegular: 400,
     fontWeightMedium: 700,
-    title: {
+    h1: {
       fontFamily: "Polar Vertex",
       fontWeight: 400
     }
