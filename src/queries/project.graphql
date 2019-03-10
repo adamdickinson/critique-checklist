@@ -1,0 +1,37 @@
+#import "./fragments.graphql"
+
+mutation CreateProject($project:ProjectInput!) {
+  createProject(project:$project) {
+    ...ProjectInfo
+  }
+}
+
+mutation UpdateProject($project:ProjectPatch!) {
+  updateProject(project:$project) {
+    ...ProjectInfo
+  }
+}
+
+mutation DeleteProject($id:ID!) {
+  deleteProject(id:$id) {
+    ...ProjectInfo
+  }
+}
+
+query GetProject($id:ID!) {
+  project(id:$id) {
+    ...ProjectInfo
+    rounds {
+      ...RoundInfo
+      project {
+        ...ProjectInfo
+      }
+    }
+  }
+}
+
+query GetProjects($clientId:ID) {
+  projects(clientId:$clientId) {
+    ...ProjectInfo
+  }
+}

@@ -10,14 +10,16 @@ import {
 import { useMutation } from "react-apollo-hooks"
 import useInputValue from "@rehooks/input-value"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 
-import { CreateClient, GetClients } from "../queries/client.graphql"
+import { Project } from "../models/project"
+import { UpdateProject, GetProjects } from "../queries/project.graphql"
 import { onEnter } from "../helpers/dom"
 
 interface DialogProps {
-  open: boolean
+  project?: Project
   onClose: () => void
+  open: boolean
 }
 
 interface LoadingStatus {
@@ -31,20 +33,18 @@ export default (props: DialogProps) => {
     loading: false,
     error: null
   })
-  const createClient = useMutation(CreateClient, {
-    update: (cache, { data: { createClient } }) => {
-      const { clients } = cache.readQuery({ query: GetClients })
-      cache.writeQuery({
-        query: GetClients,
-        data: { clients: clients.concat([createClient]) }
-      })
-    }
-  })
 
-  const onCreate = async () => {
-    const client = { name: nameInput.value }
+  useEffect(() => {
+    nameInput.onChange({ currentTarget: { value: props.project ? props.project.name : "" } })
+  }, [props.project])
+
+
+  const updateProject = useMutation(UpdateProject)
+
+  const onUpdate = async () => {
+    const project = { id: props.project.id, name: nameInput.value }
     setStatus({ loading: true, error: null })
-    const result = await createClient({ variables: { client } })
+    const result = await updateProject({ variables: { project } })
     props.onClose()
     nameInput.onChange({ currentTarget: { value: "" } })
     setStatus({ loading: false, error: null })
@@ -52,13 +52,13 @@ export default (props: DialogProps) => {
 
   return (
     <Dialog open={props.open}>
-      <DialogTitle>Create Client</DialogTitle>
+      <DialogTitle>Update Project</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
           {...nameInput}
-          onKeyPress={onEnter<HTMLInputElement>(onCreate)}
-          label="Client Name"
+          onKeyPress={onEnter<HTMLInputElement>(onUpdate)}
+          label="Project Name"
         />
         <Typography variant="caption" color="primary" style={{ marginTop: 8 }}>
           {status.error}
@@ -71,8 +71,8 @@ export default (props: DialogProps) => {
             Cancel
           </Button>
         )}
-        <Button disabled={status.loading} onClick={onCreate} color="primary">
-          {status.loading ? "Creating..." : "Create"}
+        <Button disabled={status.loading} onClick={onUpdate} color="primary">
+          {status.loading ? "Updating..." : "Update"}
         </Button>
       </DialogActions>
     </Dialog>

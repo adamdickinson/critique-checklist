@@ -1,0 +1,40 @@
+#import "./fragments.graphql"
+
+query GetRound($id:ID!) {
+  round(id:$id) {
+    ...RoundInfo
+  }
+}
+
+query GetRounds($projectId:ID) {
+  rounds(projectId:$projectId) {
+    ...RoundInfo
+  }
+}
+
+mutation CreateRound($round:RoundInput!) {
+  createRound(round:$round) {
+    ...RoundInfo
+    project {
+      ...ProjectInfo
+    }
+  }
+}
+
+mutation DeleteRound($id:ID!) {
+  deleteRound(id:$id) {
+    ...RoundInfo
+    project {
+      ...ProjectInfo
+    }
+  }
+}
+
+mutation UpdateRound($round:RoundPatch!) {
+  updateRound(round:$round) {
+    ...RoundInfo
+    project {
+      ...ProjectInfo
+    }
+  }
+}

@@ -12,10 +12,12 @@ import useInputValue from "@rehooks/input-value"
 
 import React, { useState } from "react"
 
-import { CreateClient, GetClients } from "../queries/client.graphql"
+import { Client } from "../models/client"
+import { CreateProject, GetProjects } from "../queries/project.graphql"
 import { onEnter } from "../helpers/dom"
 
 interface DialogProps {
+  client: Client
   open: boolean
   onClose: () => void
 }
@@ -31,20 +33,25 @@ export default (props: DialogProps) => {
     loading: false,
     error: null
   })
-  const createClient = useMutation(CreateClient, {
-    update: (cache, { data: { createClient } }) => {
-      const { clients } = cache.readQuery({ query: GetClients })
+  const createProject = useMutation(CreateProject, {
+    update: (cache, { data: { createProject } }) => {
+      const query = {
+        query: GetProjects,
+        variables: { clientId: createProject.clientId }
+      }
+
+      const { projects } = cache.readQuery(query)
       cache.writeQuery({
-        query: GetClients,
-        data: { clients: clients.concat([createClient]) }
+        ...query,
+        data: { projects: projects.concat([createProject]) }
       })
     }
   })
 
   const onCreate = async () => {
-    const client = { name: nameInput.value }
+    const project = { name: nameInput.value, clientId: props.client.id }
     setStatus({ loading: true, error: null })
-    const result = await createClient({ variables: { client } })
+    const result = await createProject({ variables: { project } })
     props.onClose()
     nameInput.onChange({ currentTarget: { value: "" } })
     setStatus({ loading: false, error: null })
@@ -52,13 +59,13 @@ export default (props: DialogProps) => {
 
   return (
     <Dialog open={props.open}>
-      <DialogTitle>Create Client</DialogTitle>
+      <DialogTitle>Create Project</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
           {...nameInput}
           onKeyPress={onEnter<HTMLInputElement>(onCreate)}
-          label="Client Name"
+          label="Project Name"
         />
         <Typography variant="caption" color="primary" style={{ marginTop: 8 }}>
           {status.error}

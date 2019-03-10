@@ -12,38 +12,57 @@ import gradients from "../config/gradients"
 import useLogIn from "../hooks/useLogIn"
 
 export default () => {
-  const {
-    getFormProps,
-    status
-  } = useLogIn()
+  const { getFormProps, status } = useLogIn()
 
   return (
     <>
       <BackgroundPanel />
-      <MainPanel
-        foreground="#FFF"
-        gradient={gradients.purple}
-        width="380px"
-      >
+      <MainPanel foreground="#FFF" gradient={gradients.purple} width="380px">
         <Mid>
           <section>
             <Typography variant="h1" style={{ fontSize: 64 }} color="inherit">
               Critique
             </Typography>
-            <Typography variant="caption" color="inherit" style={{ marginBottom: 12 }}>
+            <Typography
+              variant="caption"
+              color="inherit"
+              style={{ marginBottom: 12 }}
+            >
               {status}
             </Typography>
             <AuthConsumer>
               {({ logIn, user }: AuthConsumerValue) => {
-                if( user ) return <Redirect to="/" />
+                if (user) return <Redirect to="/" />
 
-                const { submitProps, usernameProps, passwordProps } = getFormProps(logIn)
+                const {
+                  submitProps,
+                  usernameProps,
+                  passwordProps
+                } = getFormProps(logIn)
                 return (
                   <>
-                    <TextField variant="filled" label="Username" {...usernameProps} />
-                    <TextField variant="filled" label="Password" type="password" {...passwordProps} />
-                    <Button variant="contained" size="large" color="primary" {...submitProps}>Log In</Button>
-                    <Button variant="contained" size="large" color="secondary">Sign Up</Button>
+                    <TextField
+                      variant="filled"
+                      label="Username"
+                      {...usernameProps}
+                    />
+                    <TextField
+                      variant="filled"
+                      label="Password"
+                      type="password"
+                      {...passwordProps}
+                    />
+                    <Button
+                      variant="contained"
+                      size="large"
+                      color="primary"
+                      {...submitProps}
+                    >
+                      Log In
+                    </Button>
+                    <Button variant="contained" size="large" color="secondary">
+                      Sign Up
+                    </Button>
                   </>
                 )
               }}
@@ -92,7 +111,8 @@ const Mid = styled.section`
   align-items: center;
 
   > section {
-    > h2, > div {
+    > h2,
+    > div {
       margin-bottom: 12px;
     }
 

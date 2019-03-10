@@ -1,10 +1,14 @@
 import { rgba } from "polished"
-import pink from "@material-ui/core/colors/pink"
 
 import React from "react"
 import styled from "styled-components"
 
-export default (props: any) => (
+interface ButtonItemProps {
+  color: string
+  onClick: () => void
+}
+
+export default (props: React.PropsWithChildren<ButtonItemProps>) => (
   <ButtonWrap>
     <ButtonItem {...props} />
   </ButtonWrap>
@@ -15,9 +19,9 @@ const ButtonWrap = styled.div`
 `
 
 const ButtonItem = styled.button`
-  background: ${() => rgba(pink["A400"],0.16)};
+  background: ${({ color }: ButtonItemProps) => rgba(color, 0.16)};
   border: none;
-  color: ${pink["A400"]};
+  color: ${({ color }: ButtonItemProps) => color};
   cursor: pointer;
   display: block;
   font-family: inherit;
@@ -33,6 +37,6 @@ const ButtonItem = styled.button`
   width: 100%;
 
   :hover {
-    background: ${() => rgba(pink["A400"],0.4)};
+  background: ${({ color }: ButtonItemProps) => rgba(color, 0.4)};
   }
 `

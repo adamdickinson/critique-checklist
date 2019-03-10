@@ -10,12 +10,12 @@ import { useMutation } from "react-apollo-hooks"
 
 import React, { useState } from "react"
 
-import { Client } from "../models/client"
-import { DeleteClient, GetClients } from "../queries/client.graphql"
+import { Project } from "../models/project"
+import { DeleteProject, GetProjects } from "../queries/project.graphql"
 import { onEnter } from "../helpers/dom"
 
 interface DialogProps {
-  client?: Client
+  project?: Project
   onClose: () => void
   open: boolean
 }
@@ -30,14 +30,19 @@ export default (props: DialogProps) => {
     loading: false,
     error: null
   })
-  const deleteClient = useMutation(DeleteClient, {
-    update: (cache, { data: { deleteClient } }) => {
-      const { clients } = cache.readQuery({ query: GetClients })
+  const deleteProject = useMutation(DeleteProject, {
+    update: (cache, { data: { deleteProject } }) => {
+      const query = {
+        query: GetProjects,
+        variables: { clientId: parseInt(deleteProject.clientId) }
+      }
+
+      const { projects } = cache.readQuery(query)
       cache.writeQuery({
-        query: GetClients,
+        ...query,
         data: {
-          clients: clients.filter(
-            (client: Client) => client.id != deleteClient.id
+          projects: projects.filter(
+            (project: Project) => project.id != deleteProject.id
           )
         }
       })
@@ -46,18 +51,18 @@ export default (props: DialogProps) => {
 
   const onConfirm = async () => {
     setStatus({ loading: true, error: null })
-    const result = await deleteClient({ variables: { id: props.client.id } })
+    const result = await deleteProject({ variables: { id: props.project.id } })
     props.onClose()
     setStatus({ loading: false, error: null })
   }
 
   return (
     <Dialog open={props.open}>
-      <DialogTitle>Delete Client</DialogTitle>
+      <DialogTitle>Delete Project</DialogTitle>
       <DialogContent>
         <Typography variant="body1">
           Are you sure you wish to delete{" "}
-          {props.client ? `client '${props.client.name}'` : "this client"}?
+          {props.project ? `project '${props.project.name}'` : "this project"}?
           This action cannot be reversed.
         </Typography>
         <Typography variant="caption" color="primary" style={{ marginTop: 8 }}>

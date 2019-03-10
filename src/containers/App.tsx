@@ -12,14 +12,12 @@ import AuthProvider from "../components/AuthProvider"
 import ClientPanel from "./ClientPanel"
 import LogIn from "./LogIn"
 import PrivateRoute from "../components/PrivateRoute"
+import ProjectPanel from "./ProjectPanel"
 import theme from "../config/theme"
-
 
 const client = new ApolloClient({
   uri: `http://${window.location.hostname}:8081/graphql`
 })
-
-
 
 export default () => {
   return (
@@ -33,6 +31,7 @@ export default () => {
               <Router>
                 <>
                   <PrivateRoute path="/" component={ClientPanel} />
+                  <PrivateRoute path="/client/:clientId/(project)?/:projectId?/(round)?/:roundId?" component={ProjectPanel} />
                   <Route path="/login" component={LogIn} />
                 </>
               </Router>
@@ -43,8 +42,6 @@ export default () => {
     </MuiThemeProvider>
   )
 }
-
-
 
 const App = styled.div`
   background: #263238;

@@ -1,7 +1,3 @@
 import * as React from "react"
 
-
-
-export default () => (
-  <div>Hello</div>
-)
+export default () => <div>Hello</div>

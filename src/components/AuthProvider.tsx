@@ -19,20 +19,23 @@ export interface AuthUser {
 }
 
 export interface AuthConsumerValue {
-  logIn: (username: string, password: string) => Promise<AuthResponse>
-  logOut: () => void
+  logIn?: (username: string, password: string) => Promise<AuthResponse>
+  logOut?: () => void
   user?: AuthUser
 }
 
-export type AuthLogInFunction = (username: string, password: string) => Promise<AuthResponse>
+export type AuthLogInFunction = (
+  username: string,
+  password: string
+) => Promise<AuthResponse>
 
 const LOG_IN = gql`
-  query LogIn($username:String!,$password:String!) { 
-    logIn (username:$username,password:$password) @client
+  query LogIn($username: String!, $password: String!) {
+    logIn(username: $username, password: $password)
   }
 `
 
-export const AuthContext = React.createContext({})
+export const AuthContext = React.createContext<AuthConsumerValue>({})
 
 interface AuthProviderProps {
   children?: React.ReactNode
@@ -47,11 +50,11 @@ interface DecodedToken {
 
 export const AuthProvider: React.FC = ({ children }: AuthProviderProps) => {
   const decode = (token: string): AuthUser => {
-    if( !token ) return null
+    if (!token) return null
     const decoded: object | string = jwt.verify(token, "secret")
-    if( !isString(decoded) ) {
+    if (!isString(decoded)) {
       const { id, username, firstName, lastName } = decoded as DecodedToken
-      if( id && username && firstName && lastName )
+      if (id && username && firstName && lastName)
         return { id, username, firstName, lastName }
     }
   }
@@ -59,34 +62,39 @@ export const AuthProvider: React.FC = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<AuthUser>(decode(store.get("token")))
   const client = useApolloClient()
 
-  const logIn: (username: string, password: string) => Promise<AuthResponse> = async (username, password) => { 
-    const { data: { logIn: token } } = await client.query({ 
+  const logIn: (
+    username: string,
+    password: string
+  ) => Promise<AuthResponse> = async (username, password) => {
+    const {
+      data: { logIn: token }
+    } = await client.query({
       query: LOG_IN,
       variables: { username, password }
     })
 
     const user: AuthUser = decode(token)
-    if( user ) {
+    if (user) {
       setUser(user)
       store.set("token", token)
     }
 
     return {
       success: !!token,
-      message: token 
-        ? "Logged in successfully!" 
+      message: token
+        ? "Logged in successfully!"
         : "Invalid credentials, check and try again."
     }
   }
 
-  const logOut: () => void = () => setUser(null)
+  const logOut: () => void = () => {
+    store.remove("token")
+    setUser(null)
+  }
+
   const value: AuthConsumerValue = { logIn, logOut, user }
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export const AuthConsumer = AuthContext.Consumer

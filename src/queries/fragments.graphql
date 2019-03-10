@@ -1,0 +1,20 @@
+fragment ClientInfo on Client {
+  id
+  name
+}
+
+fragment ProjectInfo on Project {
+  id
+  name
+  clientId
+}
+
+fragment RoundInfo on Round {
+  id
+  number
+  projectId
+  active
+  openAt
+  closeAt
+}
+

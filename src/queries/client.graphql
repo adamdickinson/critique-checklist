@@ -1,20 +1,31 @@
-mutation AddClient($client:ClientInput!) {
-  addClient(client:$client) {
-    id
-    name
+#import "./fragments.graphql"
+
+mutation CreateClient($client:ClientInput!) {
+  createClient(client:$client) {
+    ...ClientInfo
+  }
+}
+
+mutation UpdateClient($client:ClientPatch!) {
+  updateClient(client:$client) {
+    ...ClientInfo
   }
 }
 
 mutation DeleteClient($id:ID!) {
   deleteClient(id:$id) {
-    id
-    name
+    ...ClientInfo
+  }
+}
+
+query GetClient($id:ID!) {
+  client(id:$id) {
+    ...ClientInfo
   }
 }
 
 query GetClients {
   clients {
-    id
-    name
+    ...ClientInfo
   }
 }

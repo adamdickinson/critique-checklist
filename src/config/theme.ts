@@ -8,7 +8,7 @@ export default createMuiTheme({
       main: pink["A400"]
     },
     secondary: {
-      main: grey[600],
+      main: grey[600]
     }
   },
 

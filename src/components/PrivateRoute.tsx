@@ -9,7 +9,10 @@ export default ({ component: Component, ...rest }: RouteProps) => (
     {({ user }: AuthConsumerValue) => (
       <Route
         {...rest}
-        render={props => user ? <Component {...props} /> : <Redirect to="/login" />}
+        render={props => {
+          if( props.location.pathname === "/login" ) return null
+          return user ? <Component {...props} /> : <Redirect to="/login" />
+        }}
       />
     )}
   </AuthConsumer>

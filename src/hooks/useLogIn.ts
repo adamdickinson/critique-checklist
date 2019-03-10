@@ -20,7 +20,7 @@ interface ButtonWithClick {
 
 interface LogInFormProps {
   passwordProps: InputValueWithEnter<string>
-  submitProps:  ButtonWithClick
+  submitProps: ButtonWithClick
   usernameProps: InputValueWithEnter<string>
 }
 
@@ -29,30 +29,35 @@ interface LogInHook {
   status?: string
 }
 
-function useLogIn() : LogInHook {
+function useLogIn(): LogInHook {
   const [status, setStatus] = React.useState("")
   const usernameInput = useInputValue("")
   const passwordInput = useInputValue("")
 
   function onClick(logIn: () => Promise<AuthResponse>): OnClickCallback {
-    return async function(event: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+    return async function(
+      event: React.MouseEvent<HTMLButtonElement>
+    ): Promise<void> {
       setStatus("Logging in...")
       const { message, success } = await logIn()
-      if( !success ) setStatus(message)
+      if (!success) setStatus(message)
     }
   }
 
   function onEnter(logIn: () => Promise<AuthResponse>): OnEnterCallback {
-    return async function(event: React.KeyboardEvent<HTMLInputElement>): Promise<void> {
-      if( event.key !== "Enter" ) return
+    return async function(
+      event: React.KeyboardEvent<HTMLInputElement>
+    ): Promise<void> {
+      if (event.key !== "Enter") return
       setStatus("Logging in...")
       const { message, success } = await logIn()
-      if( !success ) setStatus(message)
+      if (!success) setStatus(message)
     }
   }
 
-  const getFormProps = (logIn: (username: string, password: string) => Promise<AuthResponse>) => {
-
+  const getFormProps = (
+    logIn: (username: string, password: string) => Promise<AuthResponse>
+  ) => {
     const usernameProps: InputValueWithEnter<string> = {
       ...usernameInput,
       onKeyPress: onEnter(() => logIn(usernameInput.value, passwordInput.value))
@@ -76,7 +81,7 @@ function useLogIn() : LogInHook {
 
   const specs: LogInHook = {
     getFormProps,
-    status,
+    status
   }
 
   return specs
