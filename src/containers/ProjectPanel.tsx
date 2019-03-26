@@ -1,10 +1,6 @@
 import { Query } from "react-apollo"
-import { Redirect } from "react-router-dom"
-import { RouteChildrenProps } from "react-router"
 import { Typography } from "@material-ui/core"
-import { useQuery } from "react-apollo-hooks"
 import deepPurple from "@material-ui/core/colors/deepPurple"
-import get from "lodash/get"
 import grey from "@material-ui/core/colors/grey"
 import pink from "@material-ui/core/colors/pink"
 
@@ -12,9 +8,9 @@ import React, { useContext } from "react"
 import styled from "styled-components"
 
 import { AuthConsumerValue, AuthContext } from "../components/AuthProvider"
-import { GetClient } from "../queries/client.graphql"
-import { GetProject, GetProjects } from "../queries/project.graphql"
-import { GetRound } from "../queries/round.graphql"
+import { Client } from "../models/client"
+import { GetProjects } from "../queries/project.graphql"
+import { GetRounds } from "../queries/round.graphql"
 import { MenuContent } from "../components/MenuItem"
 import { Project } from "../models/project"
 import { Round } from "../models/round"
@@ -37,63 +33,54 @@ enum Dialogs {
   UpdateRound = "UPDATE_ROUND",
 }
 
-interface ClientParams {
-  clientId?: string
-  projectId?: string
-  roundId?: string
+interface ActiveProjectEntities {
+  client: Client
+  project?: Project
+  round?: Round
 }
 
-export default ({ match }: RouteChildrenProps<ClientParams>) => {
+interface ProjectPanelProps {
+  current: ActiveProjectEntities
+  loading: boolean
+}
 
-  // Get match data
-  const { clientId, projectId, roundId } = match.params
-
-  // Load entities
-  const clientStatus = useQuery(GetClient, { variables: { id: clientId }, skip: !clientId })
-  const projectStatus = useQuery(GetProject, { variables: { id: projectId }, skip: !projectId })
-  const roundStatus = useQuery(GetRound, { variables: { id: roundId }, skip: !roundId })
-
-  const client = get(clientStatus, ["data", "client"], null)
-  const project = get(projectStatus, ["data", "project"], null)
-  const round = get(roundStatus, ["data", "round"], null)
+export default ({ current, loading }: ProjectPanelProps) => {
+  current = { ...current }
 
   // Setup dialogs
-  const { dialog, openDialog, closeAllDialogs } = useDialog<Dialogs>(null)
+  const { closeAllDialogs, dialog, dialogData: dialogProject, openDialog } = useDialog<Dialogs, Project>()
   const { logOut } = useContext<AuthConsumerValue>(AuthContext)
 
   // Setup actions
   const onCreateProject = () => openDialog(Dialogs.CreateProject)
-  const onDeleteProject = () => openDialog(Dialogs.DeleteProject)
-  const onUpdateProject = () => openDialog(Dialogs.UpdateProject)
+  const onDeleteProject = (project: Project) => () => openDialog(Dialogs.DeleteProject, project)
+  const onUpdateProject = (project: Project) => () => openDialog(Dialogs.UpdateProject, project)
 
   const onCreateRound = () => openDialog(Dialogs.CreateRound)
-  const onDeleteRound = () => openDialog(Dialogs.DeleteRound)
-  const onUpdateRound = () => openDialog(Dialogs.UpdateRound)
-
-  // Redirect if no client available
-  if( !clientStatus.loading && !client )
-    return <Redirect to="/" />
+  const onDeleteRound = (round: Round) => () => openDialog(Dialogs.DeleteRound)
+  const onUpdateRound = (round: Round) => () => openDialog(Dialogs.UpdateRound)
 
   // Show loading if required
-  if( clientStatus.loading ) {
-    <ProjectPanel foreground="#FFF" background={grey[900]} width="380px">
-      Loading...
-    </ProjectPanel>
-  }
+  if( loading )
+    return (
+      <ProjectPanel foreground="#FFF" background={grey[900]} width="380px">
+        Loading...
+      </ProjectPanel>
+    )
 
   return (
     <>
       <ProjectPanel foreground="#FFF" background={grey[900]} width="380px">
         <section>
           <Typography
-            variant="title"
+            variant="h6"
             color="inherit"
             style={{ fontSize: 32, marginBottom: 32 }}
           >
-            {client && client.name}
+            {current.client.name}
           </Typography>
 
-          <Query query={GetProjects} variables={{ clientId }}>
+          <Query query={GetProjects} variables={{ clientId: current.client.id }}>
             {({ loading, error, data }) => {
               let message
               if (loading) message = "Loading projects..."
@@ -104,33 +91,35 @@ export default ({ match }: RouteChildrenProps<ClientParams>) => {
                 <>
                   {message && <MenuContent>{message}</MenuContent>}
 
-                  {!message && data.projects.map((item: Project) => {
-                    const isCurrent = project && item.id === project.id
-                    const { id } = item
-                    const rounds = get(project, "rounds")
-
+                  {!message && data.projects.map((project: Project) => {
+                    const isCurrent = current.project && project.id === current.project.id
                     return (
-                      <React.Fragment key={id}>
+                      <React.Fragment key={project.id}>
                         <ProjectMenuItem 
-                          key={id}
-                          project={item}
-                          onUpdate={onUpdateProject}
-                          onDelete={onDeleteProject}
+                          active={isCurrent}
+                          key={project.id}
+                          onDelete={onDeleteProject(project)}
+                          onUpdate={onUpdateProject(project)}
+                          project={project}
                         />
 
-                        {isCurrent && rounds && rounds.map((round:Round) => (
-                          <RoundMenuItem 
-                            key={round.id}
-                            round={round}
-                            onUpdate={onUpdateRound}
-                            onDelete={onDeleteRound}
-                          />
-                        ))}
-
                         {isCurrent && (
-                          <ButtonItem color={deepPurple["A100"]} onClick={onCreateRound}>
-                            New Round 
-                          </ButtonItem>
+                          <>
+                            <Query query={GetRounds} variables={{ projectId: current.project.id }}>
+                              {({ loading, data }) => !loading && data.rounds.map((round:Round) => (
+                                <RoundMenuItem 
+                                  active={current.round && round.id === current.round.id}
+                                  key={round.id}
+                                  round={round}
+                                  onUpdate={onUpdateRound(round)}
+                                  onDelete={onDeleteRound(round)}
+                                />
+                              ))}
+                            </Query>
+                            <ButtonItem color={deepPurple["A100"]} onClick={onCreateRound}>
+                              New Round 
+                            </ButtonItem>
+                          </>
                         )}
                       </React.Fragment>
                     )}
@@ -148,15 +137,15 @@ export default ({ match }: RouteChildrenProps<ClientParams>) => {
         </section>
       </ProjectPanel>
 
-      {client && (
-        <CreateProjectDialog client={client} onClose={closeAllDialogs} open={dialog === Dialogs.CreateProject} />
+      {current.client && (
+        <CreateProjectDialog client={current.client} onClose={closeAllDialogs} open={dialog === Dialogs.CreateProject} />
       )}
 
-      {project && (
+      {dialogProject && (
         <>
-          <DeleteProjectDialog project={project} onClose={closeAllDialogs} open={dialog === Dialogs.DeleteProject} />
-          <UpdateProjectDialog project={project} onClose={closeAllDialogs} open={dialog === Dialogs.UpdateProject} />
-          <CreateRoundDialog project={project} onClose={closeAllDialogs} open={dialog === Dialogs.CreateRound} />
+          <DeleteProjectDialog project={dialogProject} onClose={closeAllDialogs} open={dialog === Dialogs.DeleteProject} />
+          <UpdateProjectDialog project={dialogProject} onClose={closeAllDialogs} open={dialog === Dialogs.UpdateProject} />
+          <CreateRoundDialog project={dialogProject} onClose={closeAllDialogs} open={dialog === Dialogs.CreateRound} />
         </>
       )}
 

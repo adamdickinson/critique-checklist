@@ -20,7 +20,7 @@ export default () => {
       <MainPanel foreground="#FFF" gradient={gradients.purple} width="380px">
         <Mid>
           <section>
-            <Typography variant="h1" style={{ fontSize: 64 }} color="inherit">
+            <Typography variant="h1" style={{ fontSize: 64, marginBottom: 16 }} color="inherit">
               Critique
             </Typography>
             <Typography
@@ -110,14 +110,15 @@ const Mid = styled.section`
   display: flex;
   align-items: center;
 
+  button {
+    margin: 8px 8px 0 0;
+  }
+
   > section {
     > h2,
     > div {
       margin-bottom: 12px;
     }
 
-    > button {
-      margin-right: 8px;
-    }
   }
 `

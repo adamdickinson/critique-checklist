@@ -1,0 +1,7 @@
+#import "./fragments.graphql"
+
+query GetFeedbackRevisions($feedbackId:ID) {
+  feedbackRevisions(feedbackId:$feedbackId, orderBy:"id", order:DESC) {
+    ...FeedbackRevisionInfo
+  }
+}

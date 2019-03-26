@@ -66,24 +66,33 @@ export const AuthProvider: React.FC = ({ children }: AuthProviderProps) => {
     username: string,
     password: string
   ) => Promise<AuthResponse> = async (username, password) => {
-    const {
-      data: { logIn: token }
-    } = await client.query({
-      query: LOG_IN,
-      variables: { username, password }
-    })
+    try {
+      const {
+        data: { logIn: token }
+      } = await client.query({
+        query: LOG_IN,
+        variables: { username, password }
+      })
 
-    const user: AuthUser = decode(token)
-    if (user) {
-      setUser(user)
-      store.set("token", token)
-    }
+      const user: AuthUser = decode(token)
+      if (user) {
+        setUser(user)
+        store.set("token", token)
+      }
 
-    return {
-      success: !!token,
-      message: token
-        ? "Logged in successfully!"
-        : "Invalid credentials, check and try again."
+      return {
+        success: !!token,
+        message: token
+          ? "Logged in successfully!"
+          : "Invalid credentials, check and try again."
+      }
+
+    // Something is wrong with the service
+    } catch(e) {
+      return {
+        success: false,
+        message: e.message
+      }
     }
   }
 

@@ -3,6 +3,12 @@
 query GetRound($id:ID!) {
   round(id:$id) {
     ...RoundInfo
+    project {
+      ...ProjectInfo
+      client {
+        ...ClientInfo
+      }
+    }
   }
 }
 

@@ -1,10 +1,11 @@
 import { Button, IconButton, Typography } from "@material-ui/core"
+import { Link } from "react-router-dom"
 import { Query } from "react-apollo"
 import DeleteIcon from "mdi-react/DeleteIcon"
 import PencilIcon from "mdi-react/PencilIcon"
 import pink from "@material-ui/core/colors/pink"
 
-import React, { useContext, useState } from "react"
+import React, { useContext } from "react"
 import styled from "styled-components"
 
 import { AuthConsumerValue, AuthContext } from "../components/AuthProvider"
@@ -17,6 +18,7 @@ import MenuItem, { MenuContent, MenuItemActions } from "../components/MenuItem"
 import Panel from "../components/Panel"
 import UpdateClientDialog from "../dialogs/UpdateClientDialog"
 import gradients from "../config/gradients"
+import useDialog from "../hooks/useDialog"
 
 enum ClientDialog {
   Create = "CREATE",
@@ -24,21 +26,22 @@ enum ClientDialog {
   Update = "UPDATE"
 }
 
-export default () => {
-  const [dialog, openDialog] = useState<ClientDialog>(null)
-  const [client, setClient] = useState<Client>(null)
-  const closeDialog = () => openDialog(null)
+interface ActiveClientEntities {
+  client?: Client
+}
+
+interface ClientPanelProps {
+  current?: ActiveClientEntities
+}
+
+export default ({ current }: ClientPanelProps) => {
+  current = { ...current }
+  const { closeAllDialogs, dialog, dialogData: dialogClient, openDialog } = useDialog<ClientDialog, Client>()
   const { logOut } = useContext<AuthConsumerValue>(AuthContext)
 
   const createClient = () => openDialog(ClientDialog.Create)
-  const deleteClient = (client: Client) => () => {
-    setClient(client)
-    openDialog(ClientDialog.Delete)
-  }
-  const updateClient = (client: Client) => () => {
-    setClient(client)
-    openDialog(ClientDialog.Update)
-  }
+  const deleteClient = (client: Client) => () => openDialog(ClientDialog.Delete, client)
+  const updateClient = (client: Client) => () => openDialog(ClientDialog.Update, client)
 
   return (
     <>
@@ -65,11 +68,11 @@ export default () => {
 
                   {!message && data.clients.map((client: Client) => (
                     <MenuItem
+                      active={current.client && current.client.id === client.id}
                       bold
                       key={client.id}
-                      label={client.name}
-                      to={`/client/${client.id}`}
                     >
+                      <Link to={`/client/${client.id}`}>{client.name}</Link>
                       <MenuItemActions showOnHover>
                         <IconButton color="inherit" onClick={updateClient(client)}>
                           <PencilIcon />
@@ -83,7 +86,7 @@ export default () => {
                   ))}
 
                   {!error && !loading && (
-                    <ButtonItem color={pink["A400"]} onClick={() => openDialog(ClientDialog.Create)}>
+                    <ButtonItem color={pink["A400"]} onClick={createClient}>
                       New Client
                     </ButtonItem>
                   )}
@@ -99,22 +102,9 @@ export default () => {
         </section>
       </ClientPanel>
 
-      <CreateClientDialog
-        onClose={closeDialog}
-        open={dialog === ClientDialog.Create}
-      />
-
-      <DeleteClientDialog
-        client={client}
-        onClose={closeDialog}
-        open={dialog === ClientDialog.Delete}
-      />
-
-      <UpdateClientDialog
-        client={client}
-        onClose={closeDialog}
-        open={dialog === ClientDialog.Update}
-      />
+      <CreateClientDialog onClose={closeAllDialogs} open={dialog === ClientDialog.Create} />
+      <DeleteClientDialog client={dialogClient} onClose={closeAllDialogs} open={dialog === ClientDialog.Delete} />
+      <UpdateClientDialog client={dialogClient} onClose={closeAllDialogs} open={dialog === ClientDialog.Update} />
     </>
   )
 }

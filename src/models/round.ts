@@ -6,6 +6,6 @@ export interface Round {
   projectId:string
   active:boolean
   openAt:string
-  closeAt:string
+  closedAt:string
   project:Project
 }

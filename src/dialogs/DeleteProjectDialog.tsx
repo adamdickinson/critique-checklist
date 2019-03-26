@@ -34,7 +34,7 @@ export default (props: DialogProps) => {
     update: (cache, { data: { deleteProject } }) => {
       const query = {
         query: GetProjects,
-        variables: { clientId: parseInt(deleteProject.clientId) }
+        variables: { clientId: deleteProject.clientId }
       }
 
       const { projects } = cache.readQuery(query)

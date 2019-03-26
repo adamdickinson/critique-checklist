@@ -3,6 +3,7 @@
 mutation CreateProject($project:ProjectInput!) {
   createProject(project:$project) {
     ...ProjectInfo
+    client { id }
   }
 }
 
@@ -21,6 +22,9 @@ mutation DeleteProject($id:ID!) {
 query GetProject($id:ID!) {
   project(id:$id) {
     ...ProjectInfo
+    client {
+      ...ClientInfo
+    }
     rounds {
       ...RoundInfo
       project {
@@ -33,5 +37,8 @@ query GetProject($id:ID!) {
 query GetProjects($clientId:ID) {
   projects(clientId:$clientId) {
     ...ProjectInfo
+    client {
+      ...ClientInfo
+    }
   }
 }

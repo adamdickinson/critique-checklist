@@ -3,6 +3,23 @@ fragment ClientInfo on Client {
   name
 }
 
+fragment FeedbackInfo on Feedback {
+  id
+  summary
+  detail
+  completed
+  with
+  roundId
+}
+
+fragment FeedbackRevisionInfo on FeedbackRevision {
+  id
+  createdAt
+  feedbackId
+  summary
+  detail
+}
+
 fragment ProjectInfo on Project {
   id
   name
@@ -15,6 +32,6 @@ fragment RoundInfo on Round {
   projectId
   active
   openAt
-  closeAt
+  closedAt
 }
 

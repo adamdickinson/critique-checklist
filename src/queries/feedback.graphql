@@ -1,0 +1,43 @@
+#import "./fragments.graphql"
+
+query GetFeedback($id:ID!) {
+  feedback(id:$id) {
+    ...FeedbackInfo
+    round {
+      ...RoundInfo
+    }
+  }
+}
+
+query GetFeedbacks($roundId:ID) {
+  feedbacks(roundId:$roundId) {
+    ...FeedbackInfo
+  }
+}
+
+mutation CreateFeedback($feedback:FeedbackInput!) {
+  createFeedback(feedback:$feedback) {
+    ...FeedbackInfo
+    round {
+      ...RoundInfo
+    }
+  }
+}
+
+mutation DeleteFeedback($id:ID!) {
+  deleteFeedback(id:$id) {
+    ...FeedbackInfo
+    round {
+      ...RoundInfo
+    }
+  }
+}
+
+mutation UpdateFeedback($feedback:FeedbackPatch!) {
+  updateFeedback(feedback:$feedback) {
+    ...FeedbackInfo
+    round {
+      ...RoundInfo
+    }
+  }
+}

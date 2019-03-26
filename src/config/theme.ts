@@ -20,6 +20,7 @@ export default createMuiTheme({
     h1: {
       fontFamily: "Polar Vertex",
       fontWeight: 400
-    }
+    },
+    useNextVariants: true,
   }
 })

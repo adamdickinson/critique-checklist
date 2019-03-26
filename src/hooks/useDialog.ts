@@ -1,15 +1,27 @@
 import React, { Dispatch, useState } from "react"
 
-interface DialogHook<T> {
+interface DialogHook<T, D> {
   dialog?: T
-  openDialog: Dispatch<React.SetStateAction<T>>
+  dialogData?: D
+  openDialog: (dialog: T, data?: D) => void
   closeAllDialogs: () => void
 }
 
-function useDialog<T>(defaultValue: T): DialogHook<T> {
-  const [dialog, openDialog] = useState<T>(defaultValue)
-  const closeAllDialogs = () => openDialog(defaultValue)
-  return { dialog, openDialog, closeAllDialogs }
+function useDialog<T, D>(): DialogHook<T, D> {
+  const [dialog, setDialog] = useState<T>(null)
+  const [data, setData] = useState<D>(null)
+
+  const openDialog = (dialog: T, data: D) => {
+    setDialog(dialog)
+    setData(data)
+  }
+
+  return {
+    closeAllDialogs: () => openDialog(null, null),
+    dialog,
+    dialogData: data,
+    openDialog
+  }
 }
 
 export = useDialog 

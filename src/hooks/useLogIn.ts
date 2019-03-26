@@ -3,7 +3,6 @@ import useInputValue from "@rehooks/input-value"
 import React from "react"
 
 import { AuthLogInFunction, AuthResponse } from "../components/AuthProvider"
-import logIn from "../containers/LogIn"
 
 type OnEnterCallback = (event: React.KeyboardEvent<HTMLInputElement>) => void
 type OnClickCallback = (event: React.MouseEvent<HTMLButtonElement>) => void
